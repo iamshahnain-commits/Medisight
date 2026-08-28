@@ -1,0 +1,106 @@
+{% extends "base.html" %}
+
+{% block title %}Referral Detail - MediSight MVP{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-10 offset-md-1">
+        <h1 class="mb-4">↔️ Referral #{{ referral.id }}</h1>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-10 offset-md-1">
+        <div class="card">
+            <div class="card-header">
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <h5 class="mb-0">Referral Details</h5>
+                    <div>
+                        <span class="badge badge-{{ referral.status }}" style="font-size: 1rem;">
+                            {{ referral.status.upper() }}
+                        </span>
+                        {% if referral.is_overdue %}
+                        <span class="badge badge-danger" style="font-size: 1rem;">
+                            OVERDUE ({{ referral.days_open }}d)
+                        </span>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="row mb-4">
+                    <div class="col-md-6">
+                        <h6 class="text-muted">Patient</h6>
+                        <p>
+                            <strong>
+                                <a href="{{ url_for('main.patient_detail', patient_id=referral.patient.id) }}">
+                                    {{ referral.patient.name }}
+                                </a>
+                            </strong><br>
+                            <code>{{ referral.patient.patient_id }}</code>
+                        </p>
+                    </div>
+                    <div class="col-md-6">
+                        <h6 class="text-muted">Created</h6>
+                        <p>{{ referral.created_at.strftime('%Y-%m-%d %H:%M:%S') }}</p>
+                    </div>
+                </div>
+
+                <hr>
+
+                <div class="row mb-4">
+                    <div class="col-md-6">
+                        <h6 class="text-muted">From Facility</h6>
+                        <p>
+                            <strong>{{ referral.from_facility.name }}</strong><br>
+                            {{ referral.from_facility.facility_type }}<br>
+                            <small>{{ referral.from_facility.location or 'N/A' }}</small>
+                        </p>
+                    </div>
+                    <div class="col-md-6">
+                        <h6 class="text-muted">To Facility</h6>
+                        <p>
+                            <strong>{{ referral.to_facility.name }}</strong><br>
+                            {{ referral.to_facility.facility_type }}<br>
+                            <small>{{ referral.to_facility.location or 'N/A' }}</small>
+                        </p>
+                    </div>
+                </div>
+
+                <hr>
+
+                <h6 class="text-muted">Reason</h6>
+                <p class="mb-4">{{ referral.reason }}</p>
+
+                <hr>
+
+                <!-- Status Update Form -->
+                {% if referral.status != 'completed' %}
+                <h6 class="text-muted">Update Status</h6>
+                <form method="POST" action="{{ url_for('referrals.update_status', referral_id=referral.id) }}" class="mb-4">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <select class="form-select" name="status">
+                                <option value="open" {% if referral.status == 'open' %}selected{% endif %}>Open</option>
+                                <option value="arrived" {% if referral.status == 'arrived' %}selected{% endif %}>Arrived at Facility</option>
+                                <option value="completed" {% if referral.status == 'completed' %}selected{% endif %}>Completed</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <button type="submit" class="btn btn-primary w-100">Update Status</button>
+                        </div>
+                    </div>
+                </form>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row mt-4">
+    <div class="col-md-10 offset-md-1">
+        <a href="{{ url_for('referrals.list_referrals') }}" class="btn btn-secondary">Back to Referrals</a>
+        <a href="{{ url_for('main.patient_detail', patient_id=referral.patient.id) }}" class="btn btn-primary">View Patient</a>
+    </div>
+</div>
+{% endblock %}
