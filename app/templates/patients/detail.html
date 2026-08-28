@@ -1,0 +1,217 @@
+{% extends "base.html" %}
+
+{% block title %}Patient Detail - MediSight MVP{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-12">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px;">
+            <h1>👥 {{ patient.name }}</h1>
+            <a href="{{ url_for('patients.edit', patient_id=patient.id) }}" class="btn btn-secondary">✏️ Edit</a>
+        </div>
+    </div>
+</div>
+
+<!-- Patient Info Card -->
+<div class="row">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">Patient Information</h5>
+            </div>
+            <div class="card-body">
+                <dl class="row">
+                    <dt class="col-sm-4">Patient ID:</dt>
+                    <dd class="col-sm-8"><code>{{ patient.patient_id }}</code></dd>
+                    
+                    <dt class="col-sm-4">Age:</dt>
+                    <dd class="col-sm-8">{{ patient.age or '-' }}</dd>
+                    
+                    <dt class="col-sm-4">Gender:</dt>
+                    <dd class="col-sm-8">{{ patient.gender or '-' }}</dd>
+                    
+                    <dt class="col-sm-4">Phone:</dt>
+                    <dd class="col-sm-8">{{ patient.phone or '-' }}</dd>
+                    
+                    <dt class="col-sm-4">Registered:</dt>
+                    <dd class="col-sm-8">{{ patient.created_at.strftime('%Y-%m-%d %H:%M') }}</dd>
+                </dl>
+                {% if patient.address %}
+                <hr>
+                <strong>Address:</strong>
+                <p>{{ patient.address }}</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">Quick Actions</h5>
+            </div>
+            <div class="card-body">
+                <a href="{{ url_for('triage.form') }}?patient_id={{ patient.id }}" class="btn btn-primary btn-block mb-2 d-grid gap-2">📍 Perform Triage</a>
+                <a href="{{ url_for('triage.history', patient_id=patient.id) }}" class="btn btn-info btn-block mb-2 d-grid gap-2">📋 Triage History</a>
+                <a href="{{ url_for('referrals.create') }}?patient_id={{ patient.id }}" class="btn btn-warning btn-block mb-2 d-grid gap-2">↔️ Create Referral</a>
+                <a href="{{ url_for('followups.patient_followups', patient_id=patient.id) }}" class="btn btn-success btn-block d-grid gap-2">📋 View Follow-ups</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Triages -->
+<div class="row mt-4">
+    <div class="col-md-12">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">📋 Triage History</h5>
+            </div>
+            <div class="card-body">
+                {% if triages %}
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Date</th>
+                                    <th>Symptoms</th>
+                                    <th>Duration</th>
+                                    <th>Result</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for triage in triages[:5] %}
+                                <tr>
+                                    <td>{{ triage.created_at.strftime('%Y-%m-%d %H:%M') }}</td>
+                                    <td>{{ triage.symptoms[:50] }}{% if triage.symptoms|length > 50 %}...{% endif %}</td>
+                                    <td>{% if triage.duration_days %}{{ triage.duration_days }} days{% else %}-{% endif %}</td>
+                                    <td>
+                                        {% if triage.triage_result == 'emergency' %}
+                                            <span class="badge badge-emergency">{{ triage.triage_result_display }}</span>
+                                        {% elif triage.triage_result == 'in_person' %}
+                                            <span class="badge badge-in-person">{{ triage.triage_result_display }}</span>
+                                        {% elif triage.triage_result == 'teleconsult' %}
+                                            <span class="badge badge-teleconsult">{{ triage.triage_result_display }}</span>
+                                        {% else %}
+                                            <span class="badge badge-routine">{{ triage.triage_result_display }}</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <a href="{{ url_for('triage.result', triage_id=triage.id) }}" class="btn btn-sm btn-primary">View</a>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% if triages|length > 5 %}
+                    <a href="{{ url_for('triage.history', patient_id=patient.id) }}" class="btn btn-sm btn-secondary">View All Triages</a>
+                    {% endif %}
+                {% else %}
+                    <p class="text-muted">No triage assessments yet</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Referrals -->
+<div class="row mt-4">
+    <div class="col-md-12">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">↔️ Referrals</h5>
+            </div>
+            <div class="card-body">
+                {% if referrals %}
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>From</th>
+                                    <th>To</th>
+                                    <th>Reason</th>
+                                    <th>Status</th>
+                                    <th>Created</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for referral in referrals[:5] %}
+                                <tr>
+                                    <td>{{ referral.from_facility.name }}</td>
+                                    <td>{{ referral.to_facility.name }}</td>
+                                    <td>{{ referral.reason[:40] }}{% if referral.reason|length > 40 %}...{% endif %}</td>
+                                    <td>
+                                        <span class="badge badge-{{ referral.status }}">
+                                            {{ referral.status.upper() }}
+                                            {% if referral.is_overdue %}<br><span class="badge badge-danger">OVERDUE</span>{% endif %}
+                                        </span>
+                                    </td>
+                                    <td>{{ referral.created_at.strftime('%Y-%m-%d') }}</td>
+                                    <td>
+                                        <a href="{{ url_for('referrals.detail', referral_id=referral.id) }}" class="btn btn-sm btn-primary">View</a>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% else %}
+                    <p class="text-muted">No referrals yet</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Follow-ups -->
+<div class="row mt-4">
+    <div class="col-md-12">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">📋 Follow-ups</h5>
+            </div>
+            <div class="card-body">
+                {% if followups %}
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Reason</th>
+                                    <th>Scheduled Date</th>
+                                    <th>Status</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for followup in followups[:5] %}
+                                <tr>
+                                    <td>{{ followup.reason }}</td>
+                                    <td>{{ followup.scheduled_date.strftime('%Y-%m-%d') }}</td>
+                                    <td>
+                                        <span class="badge badge-{{ followup.status }}">
+                                            {{ followup.status.upper() }}
+                                            {% if followup.is_due_today %}<br><span class="badge badge-warning">DUE</span>{% endif %}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        {% if followup.status == 'pending' %}
+                                        <form method="POST" action="{{ url_for('followups.complete', followup_id=followup.id) }}" style="display: inline;">
+                                            <button type="submit" class="btn btn-sm btn-success">Mark Done</button>
+                                        </form>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% else %}
+                    <p class="text-muted">No follow-ups scheduled</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
