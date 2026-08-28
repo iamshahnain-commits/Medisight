@@ -4,9 +4,7 @@ from app import db
 
 def get_overdue_referrals():
     """Get all open referrals that are overdue"""
-    return Referral.query.filter_by(status='open').all() and [
-        r for r in Referral.query.filter_by(status='open').all() if r.is_overdue
-    ]
+    return [r for r in Referral.query.filter_by(status='open').all() if r.is_overdue]
 
 def get_followups_due_today():
     """Get all follow-ups due today or overdue"""
