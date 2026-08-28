@@ -1,0 +1,164 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard - MediSight MVP{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-12">
+        <h1 class="mb-4">📊 Dashboard</h1>
+    </div>
+</div>
+
+<!-- Metrics Cards -->
+<div class="row">
+    <div class="col-md-3 col-sm-6">
+        <div class="card metric-card">
+            <div class="metric-number">{{ total_patients }}</div>
+            <div class="metric-label">Total Patients</div>
+        </div>
+    </div>
+    <div class="col-md-3 col-sm-6">
+        <div class="card metric-card">
+            <div class="metric-number">{{ total_facilities }}</div>
+            <div class="metric-label">Facilities</div>
+        </div>
+    </div>
+    <div class="col-md-3 col-sm-6">
+        <div class="card metric-card">
+            <div class="metric-number">{{ open_referrals_count }}</div>
+            <div class="metric-label">Open Referrals</div>
+        </div>
+    </div>
+    <div class="col-md-3 col-sm-6">
+        <div class="card metric-card">
+            <div class="metric-number" style="color: #dc3545;">{{ overdue_referrals_count }}</div>
+            <div class="metric-label">Overdue Referrals</div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-6 col-sm-6">
+        <div class="card metric-card">
+            <div class="metric-number" style="color: #fd7e14;">{{ followups_due_today_count }}</div>
+            <div class="metric-label">Follow-ups Due Today</div>
+        </div>
+    </div>
+</div>
+
+<!-- Overdue Referrals Table -->
+<div class="row mt-4">
+    <div class="col-md-12">
+        <div class="card">
+            <div class="card-header bg-danger text-white">
+                <h5 class="mb-0">⚠️ Overdue Referrals ({{ overdue_referrals|length }})</h5>
+            </div>
+            <div class="card-body">
+                {% if overdue_referrals %}
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Patient</th>
+                                    <th>From Facility</th>
+                                    <th>To Facility</th>
+                                    <th>Reason</th>
+                                    <th>Days Open</th>
+                                    <th>Status</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for referral in overdue_referrals %}
+                                <tr>
+                                    <td>
+                                        <a href="{{ url_for('main.patient_detail', patient_id=referral.patient.id) }}">
+                                            {{ referral.patient.name }}
+                                        </a>
+                                    </td>
+                                    <td>{{ referral.from_facility.name }}</td>
+                                    <td>{{ referral.to_facility.name }}</td>
+                                    <td>{{ referral.reason[:50] }}{% if referral.reason|length > 50 %}...{% endif %}</td>
+                                    <td>
+                                        <span class="badge badge-danger">{{ referral.days_open }} days</span>
+                                    </td>
+                                    <td>
+                                        <span class="badge badge-{{ referral.status }}">
+                                            {{ referral.status.upper() }}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <a href="{{ url_for('referrals.detail', referral_id=referral.id) }}" class="btn btn-sm btn-primary">
+                                            View
+                                        </a>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% else %}
+                    <div class="empty-state">
+                        <div class="empty-state-icon">✓</div>
+                        <p>No overdue referrals!</p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Follow-ups Due Today -->
+<div class="row mt-4">
+    <div class="col-md-12">
+        <div class="card">
+            <div class="card-header bg-warning text-dark">
+                <h5 class="mb-0">📋 Follow-ups Due Today ({{ followups_due_today|length }})</h5>
+            </div>
+            <div class="card-body">
+                {% if followups_due_today %}
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Patient</th>
+                                    <th>Reason</th>
+                                    <th>Scheduled Date</th>
+                                    <th>Status</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for followup in followups_due_today %}
+                                <tr>
+                                    <td>
+                                        <a href="{{ url_for('main.patient_detail', patient_id=followup.patient.id) }}">
+                                            {{ followup.patient.name }}
+                                        </a>
+                                    </td>
+                                    <td>{{ followup.reason }}</td>
+                                    <td>{{ followup.scheduled_date.strftime('%Y-%m-%d %H:%M') }}</td>
+                                    <td>
+                                        <span class="badge badge-pending">{{ followup.status.upper() }}</span>
+                                    </td>
+                                    <td>
+                                        <form method="POST" action="{{ url_for('followups.complete', followup_id=followup.id) }}" style="display: inline;">
+                                            <button type="submit" class="btn btn-sm btn-success">Mark Done</button>
+                                        </form>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% else %}
+                    <div class="empty-state">
+                        <div class="empty-state-icon">✓</div>
+                        <p>No follow-ups due today</p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
