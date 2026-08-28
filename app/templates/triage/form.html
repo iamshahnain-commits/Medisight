@@ -1,0 +1,116 @@
+{% extends "base.html" %}
+
+{% block title %}Digital Triage - MediSight MVP{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-10 offset-md-1">
+        <h1 class="mb-4">📋 Digital Triage Assessment</h1>
+        
+        <div class="card">
+            <div class="card-body">
+                {% if not patients %}
+                <div class="alert alert-info">
+                    No patients registered yet. <a href="{{ url_for('patients.register') }}">Register a patient first</a>.
+                </div>
+                {% else %}
+                <form method="POST">
+                    <!-- Patient Selection -->
+                    <div class="mb-4">
+                        <label for="patient_id" class="form-label"><strong>Select Patient *</strong></label>
+                        <select class="form-select form-select-lg" id="patient_id" name="patient_id" required>
+                            <option value="">-- Choose a patient --</option>
+                            {% for patient in patients %}
+                            <option value="{{ patient.id }}">{{ patient.patient_id }} - {{ patient.name }} (Age: {{ patient.age or 'N/A' }})</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <hr class="my-4">
+
+                    <!-- Free-text Symptoms -->
+                    <div class="mb-4">
+                        <label for="symptoms_text" class="form-label"><strong>Symptom Description</strong></label>
+                        <textarea class="form-control" id="symptoms_text" name="symptoms_text" rows="3" placeholder="Describe the patient's symptoms in detail..."></textarea>
+                        <small class="form-text text-muted">Optional free-text description</small>
+                    </div>
+
+                    <!-- Emergency Red Flags -->
+                    <div class="mb-4">
+                        <label class="form-label"><strong>⚠️ Emergency Red Flags</strong></label>
+                        <p class="text-muted small">Check any red flags present</p>
+                        <div class="row">
+                            {% for flag_key, flag_label in emergency_flags %}
+                            <div class="col-md-6 mb-2">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" id="flag_{{ flag_key }}" name="symptoms" value="{{ flag_key }}">
+                                    <label class="form-check-label" for="flag_{{ flag_key }}">
+                                        {{ flag_label }}
+                                    </label>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+
+                    <hr class="my-4">
+
+                    <!-- Common Symptoms -->
+                    <div class="mb-4">
+                        <label class="form-label"><strong>🤒 Common Symptoms</strong></label>
+                        <p class="text-muted small">Select symptoms present</p>
+                        <div class="row">
+                            {% for symptom_key, symptom_label in common_symptoms %}
+                            <div class="col-md-6 mb-2">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" id="symptom_{{ symptom_key }}" name="symptoms" value="{{ symptom_key }}">
+                                    <label class="form-check-label" for="symptom_{{ symptom_key }}">
+                                        {{ symptom_label }}
+                                    </label>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+
+                    <hr class="my-4">
+
+                    <!-- Duration -->
+                    <div class="mb-4">
+                        <label for="duration_days" class="form-label"><strong>Duration of Symptoms</strong></label>
+                        <input type="number" class="form-control" id="duration_days" name="duration_days" min="0" max="365" placeholder="Number of days">
+                    </div>
+
+                    <hr class="my-4">
+
+                    <!-- Risk Factors -->
+                    <div class="mb-4">
+                        <label class="form-label"><strong>⚠️ Risk Factors</strong></label>
+                        <p class="text-muted small">Select applicable risk factors</p>
+                        <div class="row">
+                            {% for risk_key, risk_label in risk_factors %}
+                            <div class="col-md-6 mb-2">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" id="risk_{{ risk_key }}" name="risk_factors" value="{{ risk_key }}">
+                                    <label class="form-check-label" for="risk_{{ risk_key }}">
+                                        {{ risk_label }}
+                                    </label>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+
+                    <hr class="my-4">
+
+                    <div class="d-grid gap-2">
+                        <button type="submit" class="btn btn-primary btn-lg">📊 Submit Triage Assessment</button>
+                        <a href="{{ url_for('dashboard.index') }}" class="btn btn-secondary">Cancel</a>
+                    </div>
+                </form>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
