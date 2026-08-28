@@ -1,0 +1,91 @@
+{% extends "base.html" %}
+
+{% block title %}Referrals - MediSight MVP{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-12">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px;">
+            <h1>↔️ Referrals</h1>
+            <a href="{{ url_for('referrals.create') }}" class="btn btn-primary">+ Create Referral</a>
+        </div>
+    </div>
+</div>
+
+<!-- Filter Tabs -->
+<div class="row mb-4">
+    <div class="col-md-12">
+        <div class="btn-group" role="group">
+            <a href="{{ url_for('referrals.list_referrals') }}" class="btn btn-outline-primary {% if not status_filter %}active{% endif %}">All ({{ referrals|length }})</a>
+            <a href="{{ url_for('referrals.list_referrals', status='open') }}" class="btn btn-outline-primary {% if status_filter == 'open' %}active{% endif %}">Open ({{ open_referrals|length }})</a>
+            <a href="{{ url_for('referrals.list_referrals', status='open') }}" class="btn btn-outline-danger {% if status_filter == 'open' %}active{% endif %}">Overdue ({{ overdue_referrals|length }})</a>
+            <a href="{{ url_for('referrals.list_referrals', status='arrived') }}" class="btn btn-outline-primary {% if status_filter == 'arrived' %}active{% endif %}">Arrived</a>
+            <a href="{{ url_for('referrals.list_referrals', status='completed') }}" class="btn btn-outline-primary {% if status_filter == 'completed' %}active{% endif %}">Completed</a>
+        </div>
+    </div>
+</div>
+
+{% if referrals %}
+<div class="row">
+    <div class="col-md-12">
+        <div class="card">
+            <div class="table-responsive">
+                <table class="table table-hover mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Patient</th>
+                            <th>From Facility</th>
+                            <th>To Facility</th>
+                            <th>Reason</th>
+                            <th>Created</th>
+                            <th>Status</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for referral in referrals %}
+                        <tr>
+                            <td>
+                                <a href="{{ url_for('main.patient_detail', patient_id=referral.patient.id) }}">
+                                    {{ referral.patient.name }}
+                                </a>
+                            </td>
+                            <td>{{ referral.from_facility.name }}</td>
+                            <td>{{ referral.to_facility.name }}</td>
+                            <td>{{ referral.reason[:50] }}{% if referral.reason|length > 50 %}...{% endif %}</td>
+                            <td>{{ referral.created_at.strftime('%Y-%m-%d') }}</td>
+                            <td>
+                                <span class="badge badge-{{ referral.status }}">
+                                    {{ referral.status.upper() }}
+                                </span>
+                                {% if referral.is_overdue %}
+                                <br><span class="badge badge-danger">{{ referral.days_open }}d OVERDUE</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <a href="{{ url_for('referrals.detail', referral_id=referral.id) }}" class="btn btn-sm btn-primary">
+                                    View
+                                </a>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% else %}
+<div class="row">
+    <div class="col-md-12">
+        <div class="card">
+            <div class="empty-state">
+                <div class="empty-state-icon">↔️</div>
+                <p>No referrals found</p>
+                <a href="{{ url_for('referrals.create') }}" class="btn btn-primary">Create First Referral</a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+{% endblock %}

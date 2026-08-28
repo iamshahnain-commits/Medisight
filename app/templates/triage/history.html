@@ -1,0 +1,89 @@
+{% extends "base.html" %}
+
+{% block title %}Triage History - MediSight MVP{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-12">
+        <h1 class="mb-4">📋 Triage History - {{ patient.name }}</h1>
+    </div>
+</div>
+
+{% if triages %}
+<div class="row">
+    <div class="col-md-12">
+        <div class="card">
+            <div class="table-responsive">
+                <table class="table table-hover mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Date</th>
+                            <th>Symptoms</th>
+                            <th>Duration</th>
+                            <th>Risk Factors</th>
+                            <th>Result</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for triage in triages %}
+                        <tr>
+                            <td>{{ triage.created_at.strftime('%Y-%m-%d %H:%M') }}</td>
+                            <td>{{ triage.symptoms[:60] }}{% if triage.symptoms|length > 60 %}...{% endif %}</td>
+                            <td>{% if triage.duration_days %}{{ triage.duration_days }} days{% else %}-{% endif %}</td>
+                            <td>
+                                {% if triage.risk_factors %}
+                                    {% for risk in triage.risk_factors.split(',')[:2] %}
+                                        {% if risk.strip() %}
+                                        <span class="badge bg-warning text-dark">{{ risk.strip().replace('_', ' ').title() }}</span>
+                                        {% endif %}
+                                    {% endfor %}
+                                    {% if triage.risk_factors.split(',')|length > 2 %}
+                                    <span class="badge bg-secondary">+{{ triage.risk_factors.split(',')|length - 2 }}</span>
+                                    {% endif %}
+                                {% else %}
+                                    -
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if triage.triage_result == 'emergency' %}
+                                    <span class="badge badge-emergency">{{ triage.triage_result_display }}</span>
+                                {% elif triage.triage_result == 'in_person' %}
+                                    <span class="badge badge-in-person">{{ triage.triage_result_display }}</span>
+                                {% elif triage.triage_result == 'teleconsult' %}
+                                    <span class="badge badge-teleconsult">{{ triage.triage_result_display }}</span>
+                                {% else %}
+                                    <span class="badge badge-routine">{{ triage.triage_result_display }}</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <a href="{{ url_for('triage.result', triage_id=triage.id) }}" class="btn btn-sm btn-primary">View</a>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% else %}
+<div class="row">
+    <div class="col-md-12">
+        <div class="card">
+            <div class="empty-state">
+                <div class="empty-state-icon">📋</div>
+                <p>No triage assessments for this patient</p>
+                <a href="{{ url_for('triage.form') }}?patient_id={{ patient.id }}" class="btn btn-primary">Create First Assessment</a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<div class="row mt-4">
+    <div class="col-md-12">
+        <a href="{{ url_for('main.patient_detail', patient_id=patient.id) }}" class="btn btn-secondary">Back to Patient</a>
+    </div>
+</div>
+{% endblock %}

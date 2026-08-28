@@ -1,0 +1,58 @@
+{% extends "base.html" %}
+
+{% block title %}Create Referral - MediSight MVP{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-8 offset-md-2">
+        <h1 class="mb-4">↔️ Create New Referral</h1>
+        
+        <div class="card">
+            <div class="card-body">
+                <form method="POST">
+                    <div class="mb-3">
+                        <label for="patient_id" class="form-label">Patient *</label>
+                        <select class="form-select" id="patient_id" name="patient_id" required>
+                            <option value="">-- Select a patient --</option>
+                            {% for patient in patients %}
+                            <option value="{{ patient.id }}">{{ patient.patient_id }} - {{ patient.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="from_facility_id" class="form-label">From Facility *</label>
+                            <select class="form-select" id="from_facility_id" name="from_facility_id" required>
+                                <option value="">-- Select facility --</option>
+                                {% for facility in facilities %}
+                                <option value="{{ facility.id }}">{{ facility.name }} ({{ facility.facility_type }})</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="to_facility_id" class="form-label">To Facility *</label>
+                            <select class="form-select" id="to_facility_id" name="to_facility_id" required>
+                                <option value="">-- Select facility --</option>
+                                {% for facility in facilities %}
+                                <option value="{{ facility.id }}">{{ facility.name }} ({{ facility.facility_type }})</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="reason" class="form-label">Reason for Referral *</label>
+                        <textarea class="form-control" id="reason" name="reason" rows="4" placeholder="Explain why the patient is being referred..." required></textarea>
+                    </div>
+                    
+                    <div class="d-grid gap-2">
+                        <button type="submit" class="btn btn-primary btn-lg">Create Referral</button>
+                        <a href="{{ url_for('referrals.list_referrals') }}" class="btn btn-secondary">Cancel</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

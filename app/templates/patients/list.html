@@ -1,0 +1,70 @@
+{% extends "base.html" %}
+
+{% block title %}Patients - MediSight MVP{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-12">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px;">
+            <h1>👥 Patients</h1>
+            <a href="{{ url_for('patients.register') }}" class="btn btn-primary">+ Register New Patient</a>
+        </div>
+    </div>
+</div>
+
+{% if patients %}
+<div class="row">
+    <div class="col-md-12">
+        <div class="card">
+            <div class="table-responsive">
+                <table class="table table-hover mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Patient ID</th>
+                            <th>Name</th>
+                            <th>Age</th>
+                            <th>Gender</th>
+                            <th>Phone</th>
+                            <th>Registered</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for patient in patients %}
+                        <tr>
+                            <td><strong>{{ patient.patient_id }}</strong></td>
+                            <td>{{ patient.name }}</td>
+                            <td>{{ patient.age or '-' }}</td>
+                            <td>{{ patient.gender or '-' }}</td>
+                            <td>{{ patient.phone or '-' }}</td>
+                            <td>{{ patient.created_at.strftime('%Y-%m-%d') }}</td>
+                            <td>
+                                <a href="{{ url_for('main.patient_detail', patient_id=patient.id) }}" class="btn btn-sm btn-primary">
+                                    View
+                                </a>
+                                <a href="{{ url_for('patients.edit', patient_id=patient.id) }}" class="btn btn-sm btn-secondary">
+                                    Edit
+                                </a>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% else %}
+<div class="row">
+    <div class="col-md-12">
+        <div class="card">
+            <div class="empty-state">
+                <div class="empty-state-icon">👥</div>
+                <p>No patients registered yet</p>
+                <a href="{{ url_for('patients.register') }}" class="btn btn-primary">Register First Patient</a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+{% endblock %}
